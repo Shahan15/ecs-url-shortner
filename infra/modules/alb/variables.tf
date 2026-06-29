@@ -1,0 +1,9 @@
+variable "alb_sg_id" {
+  type        = string
+  description = "ALB Security Group ID"
+}
+
+variable "public_subnets" {
+  type        = list(string)
+  description = "Public Subnet ID's"
+}
