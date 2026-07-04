@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkShortener Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+
+    <!-- Top Navigation -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 text-white p-2 rounded-lg font-bold text-xl tracking-tight">🔗</div>
+                <h1 class="text-xl font-bold text-slate-900 tracking-tight">ShortenAnalytics</h1>
+            </div>
+            <div class="flex items-center space-x-4 text-sm font-medium">
+                <div id="core-status" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
+                    <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                    <span>Core API: Checking...</span>
+                </div>
+                <div id="dash-status" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
+                    <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                    <span>Dashboard API: Checking...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+
+        <!-- Shortener & System Summary Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- URL Shortener Form -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-900 mb-2">Create Short Link</h2>
+                    <p class="text-sm text-slate-500 mb-4">Paste a long URL to generate a secure, trackable short code.</p>
+                    
+                    <form id="shorten-form" class="space-y-3">
+                        <div class="flex gap-2">
+                            <input type="url" id="long-url" required placeholder="https://example.com/very/long/path/to/something" 
+                                class="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50/50">
+                            <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg transition duration-150 shadow-xs cursor-pointer">
+                                Shorten
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Result Box Container -->
+                <div id="result-box" class="hidden mt-6 pt-6 border-t border-slate-100">
+                    <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between">
+                        <div class="truncate mr-4">
+                            <span class="block text-xs font-semibold text-emerald-800 uppercase tracking-wider">Your Short Link</span>
+                            <a id="short-link" href="#" target="_blank" class="text-base font-bold text-indigo-600 hover:underline break-all"></a>
+                        </div>
+                        <button id="copy-btn" class="px-3 py-1.5 bg-white border border-emerald-300 text-emerald-800 font-medium text-xs rounded-md hover:bg-emerald-100 transition cursor-pointer">
+                            Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform Summary Metadata Cards -->
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
+                <h2 class="text-lg font-semibold text-slate-900 mb-4">Platform Metrics</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                        <span class="text-sm font-medium text-slate-500">Total Managed Links</span>
+                        <span id="stat-total-urls" class="text-xl font-bold text-slate-900">—</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                        <span class="text-sm font-medium text-slate-500">Aggregate Clicks</span>
+                        <span id="stat-total-clicks" class="text-xl font-bold text-slate-900">—</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-indigo-50/50 rounded-lg border border-indigo-100">
+                        <span class="text-sm font-medium text-indigo-700">Clicks Today</span>
+                        <span id="stat-clicks-today" class="text-xl font-bold text-indigo-700">—</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Links Data Tables Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Top Links Leaderboard -->
+            <div class="lg:col-span-1 bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/70">
+                    <h2 class="text-sm font-semibold text-slate-900 tracking-wide uppercase">Top Links Leaderboard</h2>
+                </div>
+                <div class="divide-y divide-slate-100 max-h-[380px] overflow-y-auto" id="top-links-container">
+                    <p class="p-6 text-sm text-slate-400 text-center">Loading trends...</p>
+                </div>
+            </div>
+
+            <!-- Recent Processing Log Queue -->
+            <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/70 flex justify-between items-center">
+                    <h2 class="text-sm font-semibold text-slate-900 tracking-wide uppercase">Live Click Log Pipeline</h2>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">Worker Driven</span>
+                </div>
+                <div class="overflow-x-auto max-h-[380px]">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 font-medium border-b border-slate-100 sticky top-0">
+                                <th class="p-4 py-3">Code</th>
+                                <th class="p-4 py-3">IP Address</th>
+                                <th class="p-4 py-3">Device/User Agent</th>
+                                <th class="p-4 py-3 text-right">Clicked At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-clicks-tbody" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="4" class="p-6 text-center text-slate-400">Loading worker analytics pipeline...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Configurable Endpoint Routings 
+        const CORE_API = 'http://localhost:8080';
+        const DASHBOARD_API = 'http://localhost:8081';
+
+        // Health Checker Engine
+        async function runHealthChecks() {
+            // Core Fast API
+            try {
+                const res = await fetch(`${CORE_API}/healthz`);
+                const data = await res.json();
+                updateBadge('core-status', `Core: Active (${data.db})`, 'bg-emerald-500', 'bg-slate-400');
+            } catch(e) {
+                updateBadge('core-status', 'Core: Down', 'bg-rose-500', 'bg-slate-400');
+            }
+
+            // Go Dashboard App
+            try {
+                const res = await fetch(`${DASHBOARD_API}/healthz`);
+                if (res.ok) {
+                    updateBadge('dash-status', 'Dashboard: Active', 'bg-emerald-500', 'bg-slate-400');
+                } else { throw new Error(); }
+            } catch(e) {
+                updateBadge('dash-status', 'Dashboard: Down', 'bg-rose-500', 'bg-slate-400');
+            }
+        }
+
+        function updateBadge(id, text, addClass, removeClass) {
+            const el = document.getElementById(id);
+            el.querySelector('span:nth-child(2)').innerText = text;
+            el.querySelector('span:nth-child(1)').className = `w-2 h-2 rounded-full ${addClass}`;
+        }
+
+        // UI Core Dynamic Processing 
+        async function fetchMetrics() {
+            try {
+                const res = await fetch(`${DASHBOARD_API}/summary`);
+                const data = await res.json();
+                document.getElementById('stat-total-urls').innerText = data.total_urls.toLocaleString();
+                document.getElementById('stat-total-clicks').innerText = data.total_clicks.toLocaleString();
+                document.getElementById('stat-clicks-today').innerText = data.clicks_today.toLocaleString();
+            } catch(e) { console.error("Summary metric extraction offline", e); }
+
+            // Fetch Top Links Elements
+            try {
+                const res = await fetch(`${DASHBOARD_API}/top`);
+                const data = await res.json();
+                const container = document.getElementById('top-links-container');
+                container.innerHTML = data && data.length ? data.map(item => `
+                    <div class="p-4 px-6 flex items-center justify-between hover:bg-slate-50 transition">
+                        <div class="truncate mr-3">
+                            <span class="font-mono text-xs font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">${item.short_code}</span>
+                            <span class="text-xs text-slate-400 ml-2 block sm:inline truncate max-w-xs">${item.url}</span>
+                        </div>
+                        <div class="text-right whitespace-nowrap">
+                            <span class="text-sm font-bold text-slate-900">${item.clicks.toLocaleString()}</span>
+                            <span class="text-xs text-slate-400 ml-0.5">clicks</span>
+                        </div>
+                    </div>
+                `).join('') : '<p class="p-6 text-sm text-slate-400 text-center">No short links mapped yet.</p>';
+            } catch(e) { console.error("Leaderboard component processing broke down", e); }
+
+            // Fetch Recent Click Log
+            try {
+                const res = await fetch(`${DASHBOARD_API}/recent`);
+                const data = await res.json();
+                const tbody = document.getElementById('recent-clicks-tbody');
+                tbody.innerHTML = data && data.length ? data.map(c => {
+                    const dateStr = new Date(c.clicked_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+                    return `
+                        <tr class="hover:bg-slate-50/80 transition text-slate-700">
+                            <td class="p-4 py-3 font-mono font-bold text-indigo-600">${c.short_code}</td>
+                            <td class="p-4 py-3 font-mono text-xs text-slate-600">${c.ip}</td>
+                            <td class="p-4 py-3 max-w-xs truncate text-xs text-slate-500" title="${c.user_agent}">${c.user_agent || '—'}</td>
+                            <td class="p-4 py-3 text-right text-xs text-slate-400">${dateStr}</td>
+                        </tr>
+                    `}).join('') : '<tr><td colspan="4" class="p-6 text-center text-slate-400">No clicks routed yet.</td></tr>';
+            } catch(e) { console.error("Event trace log render drop out", e); }
+        }
+
+        // Submissions 
+        document.getElementById('shorten-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const urlInput = document.getElementById('long-url');
+            const targetUrl = urlInput.value;
+
+            try {
+                const res = await fetch(`${CORE_API}/shorten`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url: targetUrl})
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    const resultBox = document.getElementById('result-box');
+                    const linkAnchor = document.getElementById('short-link');
+                    
+                    // Fallback configuration strategy parsing
+                    const finalShortUrl = data.short_url.startsWith('http') ? data.short_url : `${CORE_API}/${data.short}`;
+                    
+                    linkAnchor.href = finalShortUrl;
+                    linkAnchor.innerText = finalShortUrl;
+                    resultBox.classList.remove('hidden');
+                    
+                    // Setup Copy Functionality UI
+                    document.getElementById('copy-btn').onclick = () => {
+                        navigator.clipboard.writeText(finalShortUrl);
+                        const btn = document.getElementById('copy-btn');
+                        btn.innerText = 'Copied!';
+                        setTimeout(() => btn.innerText = 'Copy', 2000);
+                    };
+                    urlInput.value = '';
+                    fetchMetrics(); // Force Refresh stats out-of-band
+                } else {
+                    alert(`Error: ${data.detail || 'Failed process execution'}`);
+                }
+            } catch(err) {
+                alert('Could not interface with Core API service deployment module.');
+            }
+        });
+
+        // Loop Runner Initialization Execution 
+        runHealthChecks();
+        fetchMetrics();
+        setInterval(runHealthChecks, 10000);
+        setInterval(fetchMetrics, 4000);
+    </script>
+</body>
+</html>

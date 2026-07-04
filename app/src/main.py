@@ -1,10 +1,26 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware 
 import os, hashlib, time, json
 from .db import put_mapping, get_mapping, get_backend_type, increment_clicks
 from .events import publish_click_event
+from fastapi.staticfiles import StaticFiles
+
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/dashboard")
+def redirect_to_dashboard():
+    return RedirectResponse(url="/dashboard/")
+
+app.mount("/dashboard", StaticFiles(directory="static", html=True), name="static")
 
 
 @app.get("/healthz")
