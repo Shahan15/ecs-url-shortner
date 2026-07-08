@@ -1,6 +1,10 @@
 variable "src_container_port" {
   type = string
-  description = "port of src fastapi that it is listening on"
+  description = "Port of src fastapi that it is listening on"
+}
+variable "dashboard_container_port" {
+  type = string
+  description = "Port of Dashboard API that it is listening on"
 }
 
 variable "ecs-iam-role" {
@@ -8,7 +12,12 @@ variable "ecs-iam-role" {
   description = "IAM Role required for ECS Service"
 }
 
-variable "alb-target_group_arn" {
+variable "src-tg-arn" {
   type = string
-  description = "ALB Target Group ARN"
+  description = "Src api Target Group ARN"
+}
+
+variable "dashboard-tg-arn" {
+  type = string
+  description = "Dashboard API Target Group ARN"
 }
