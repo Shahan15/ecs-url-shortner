@@ -30,7 +30,29 @@ resource "aws_lb_listener" "front_end" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.ecs-task.arn
+    target_group_arn = aws_lb_target_group.src-api-tg.arn
   }
 }
+
+
+resource "aws_lb_listener_rule" "dasboard_routing" {
+  listener_arn = aws_lb_listener.front_end.arn
+  priority     = 100
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.dashboard-api-tg.arn
+  }
+
+  condition {
+    path_pattern {
+      values = [
+        "/summary*",
+        "/top*",
+        "recent*"
+        ]
+    }
+  }
+}
+
 
