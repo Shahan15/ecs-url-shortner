@@ -42,8 +42,7 @@ resource "aws_ecs_service" "url-src-ecs-service" {
   cluster         = aws_ecs_cluster.url-short-ecs-cluster.id
   task_definition = aws_ecs_task_definition.url-src-td.id
   desired_count   = 2
-  iam_role        = var.ecs-iam-role
-#   depends_on      = [aws_iam_role_policy.foo]
+  iam_role        = var.ecs-service-role-arn
   launch_type     = "FARGATE"
 
   load_balancer {
@@ -90,7 +89,7 @@ resource "aws_ecs_service" "url-dsahboard-ecs-service" {
   cluster         = aws_ecs_cluster.url-short-ecs-cluster.id
   task_definition = aws_ecs_task_definition.url-dsahboard-td.id
   desired_count   = 1
-  iam_role        = var.ecs-iam-role
+  iam_role        = var.ecs-service-role-arn
 #   depends_on      = [aws_iam_role_policy.foo]
   launch_type     = "FARGATE"
 

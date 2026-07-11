@@ -7,7 +7,7 @@ variable "dashboard_container_port" {
   description = "Port of Dashboard API that it is listening on"
 }
 
-variable "ecs-iam-role" {
+variable "ecs-service-role-arn" {
   type = string
   description = "IAM Role required for ECS Service"
 }
