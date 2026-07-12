@@ -18,13 +18,13 @@ resource "aws_ecs_task_definition" "url-src-td" {
 [
   {
     "name": "url-src-container-def",
-    "image": ${data.aws_ecr_repository.url-shortner-ecr.repository_url}:src-latest,
+    "image": "${data.aws_ecr_repository.url-shortner-ecr.repository_url}:src-latest",
     "cpu": 1024,
     "memory": 2048,
     "essential": true,
     "portMappings" : [
           {
-            "containerPort" : ${var.src_container_port},
+            "containerPort" : ${var.src_container_port}
           }
         ]
     }
@@ -65,13 +65,13 @@ resource "aws_ecs_task_definition" "url-dsahboard-td" {
 [
   {
     "name": "url-dashboard-container-def",
-    "image": ${data.aws_ecr_repository.url-shortner-ecr.repository_url}:dashboard-latest,
+    "image": "${data.aws_ecr_repository.url-shortner-ecr.repository_url}:dashboard-latest",
     "cpu": 1024,
     "memory": 2048,
     "essential": true,
     "portMappings" : [
           {
-            "containerPort" : ${var.dashboard_container_port},
+            "containerPort" : ${var.dashboard_container_port}
           }
         ]
     }

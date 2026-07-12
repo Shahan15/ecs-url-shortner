@@ -4,11 +4,18 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 6.0"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 5"
+    }
   }
 }
 
-# Configure the AWS Provider
 provider "aws" {
   region = "eu-west-1"
+}
+
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
 }
 

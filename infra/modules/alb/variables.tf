@@ -12,3 +12,8 @@ variable "vpc_id" {
   type = string
   description = "VPC ID"
 }
+
+variable "acm-cert-arn" {
+  type = string
+  description = "ACM Cert ARN"
+}
