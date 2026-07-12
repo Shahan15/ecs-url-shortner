@@ -7,3 +7,8 @@ output "dashboard-api-tg" {
   value = aws_lb_target_group.dashboard-api-tg.arn
   description = "Dashboard API TG ARN"
 }
+
+output "alb-arn" {
+  value = aws_lb.url-alb.arn
+  description = "ALB URN"
+}
