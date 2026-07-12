@@ -40,3 +40,21 @@ module "waf" {
   source  = "./modules/waf"
   alb-arn = module.alb.alb-arn
 }
+
+module "route53" {
+  source       = "./modules/route53"
+  alb_dns_name = module.alb.alb_dns_name
+  alb_zone_id  = module.alb.alb_zone_id
+}
+
+module "dns" {
+  source             = "./modules/dns"
+  cloudflare_zone_id = var.cloudflare_zone_id
+  sub_domain         = var.sub_domain
+  name_servers_map = {
+    "ns0" = module.route53.hosted_zone_ns[0]
+    "ns1" = module.route53.hosted_zone_ns[1]
+    "ns2" = module.route53.hosted_zone_ns[2]
+    "ns3" = module.route53.hosted_zone_ns[3]
+  }
+}

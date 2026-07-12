@@ -12,3 +12,13 @@ output "alb-arn" {
   value = aws_lb.url-alb.arn
   description = "ALB URN"
 }
+
+output "alb_dns_name" {
+  value = aws_lb.url-alb.dns_name
+  description = "DNS Name of the ALB"
+}
+
+output "alb_zone_id" {
+  value = aws_lb.url-alb.zone_id
+  description = "The zone id of the ALB"
+}

@@ -61,7 +61,7 @@ resource "aws_ecs_service" "url-src-ecs-service" {
 
 
 #ECS SERVICE FOR DASHBOARD SERVICE API
-resource "aws_ecs_task_definition" "url-dsahboard-td" {
+resource "aws_ecs_task_definition" "url-dashboard-td" {
   family                   = "url-dashboard-td"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
@@ -91,10 +91,10 @@ TASK_DEFINITION
   }
 }
 
-resource "aws_ecs_service" "url-dsahboard-ecs-service" {
-  name            = "url-short-dsahboard-ecs-service"
+resource "aws_ecs_service" "url-dashboard-ecs-service" {
+  name            = "url-short-dashboard-ecs-service"
   cluster         = aws_ecs_cluster.url-short-ecs-cluster.id
-  task_definition = aws_ecs_task_definition.url-dsahboard-td.id
+  task_definition = aws_ecs_task_definition.url-dashboard-td.id
   desired_count   = 1
   launch_type     = "FARGATE"
 

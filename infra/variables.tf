@@ -13,6 +13,11 @@ variable "domain_name" {
   description = "Domain Name"
 }
 
+variable "sub_domain" {
+  type = string
+  description = "Sub Domain"
+}
+
 variable "cloudflare_api_token" {
   type        = string
   description = "Cloudflare Account API Token"

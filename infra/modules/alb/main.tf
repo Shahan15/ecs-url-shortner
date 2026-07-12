@@ -35,7 +35,7 @@ resource "aws_lb_listener" "front_end" {
 }
 
 
-resource "aws_lb_listener_rule" "dasboard_routing" {
+resource "aws_lb_listener_rule" "dashboard_routing" {
   listener_arn = aws_lb_listener.front_end.arn
   priority     = 100
 
