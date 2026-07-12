@@ -9,6 +9,6 @@ __pycache__/
 
 #terraform
 terraform.tfstate*
-*.tfvars
+infra/terraform.tfvars
 .terraform.tfstate.lock.info
 *.terraform
