@@ -21,3 +21,13 @@ variable "dashboard-tg-arn" {
   type = string
   description = "Dashboard API Target Group ARN"
 }
+
+variable "private_subnets" {
+  type        = list(string)
+  description = "Private Subnet ID's"
+}
+
+variable "security_group" {
+  type = string
+  description = "Security group for ALB ID"
+}
