@@ -53,7 +53,7 @@ resource "aws_ecs_service" "url-src-ecs-service" {
 
   network_configuration {
     subnets          = var.private_subnets
-    security_groups  = [var.security_group]
+    security_groups  = [var.ecs_src_sg_id]
     assign_public_ip = false
   }
   
@@ -106,7 +106,7 @@ resource "aws_ecs_service" "url-dashboard-ecs-service" {
 
   network_configuration {
     subnets          = var.private_subnets
-    security_groups  = [var.security_group]
+    security_groups  = [var.ecs_dashboard_sg_id]
     assign_public_ip = false
   }
 
