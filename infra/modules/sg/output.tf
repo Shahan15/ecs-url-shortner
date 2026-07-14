@@ -12,3 +12,8 @@ output "ecs_dashboard_sg_id" {
   value = aws_security_group.ecs_dashboard_sg.id
   description = "ECS Dashboard Container security group ID"
 }
+
+output "vpc_endpoints_sg" {
+  value = aws_security_group.vpc_endpoints_sg.id
+  description = "VPC Endpoint Security Group"
+}

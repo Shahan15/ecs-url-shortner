@@ -69,5 +69,28 @@ resource "aws_security_group" "ecs_dashboard_sg" {
   }
 }
 
+# Dedicated Security Group for VPC Endpoints
+resource "aws_security_group" "vpc_endpoints_sg" {
+  name        = "vpc_endpoints_sg"
+  description = "Allow private ECS tasks to communicate with VPC Endpoints"
+  vpc_id      = var.vpc_id
 
+  # Allow inbound HTTPS (443) ONLY from ECS task security groups
+  ingress {
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    security_groups = [
+      aws_security_group.ecs_src_sg.id,
+      aws_security_group.ecs_dashboard_sg.id
+    ]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
 

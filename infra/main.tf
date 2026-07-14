@@ -1,5 +1,6 @@
 module "vpc" {
   source = "./modules/vpc"
+  vpc_endpoints_sg = module.security_group.vpc_endpoints_sg
 }
 
 module "security_group" {

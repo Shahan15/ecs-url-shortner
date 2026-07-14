@@ -34,7 +34,7 @@ TASK_DEFINITION
 
   runtime_platform {
     operating_system_family = "LINUX"
-    cpu_architecture        = "X86_64"
+    cpu_architecture        = "ARM64"
   }
 }
 
@@ -87,7 +87,7 @@ TASK_DEFINITION
 
   runtime_platform {
     operating_system_family = "LINUX"
-    cpu_architecture        = "X86_64"
+    cpu_architecture        = "ARM64"
   }
 }
 
