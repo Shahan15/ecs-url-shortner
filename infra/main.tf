@@ -1,5 +1,5 @@
 module "vpc" {
-  source = "./modules/vpc"
+  source           = "./modules/vpc"
   vpc_endpoints_sg = module.security_group.vpc_endpoints_sg
 }
 
@@ -26,6 +26,10 @@ module "ecs" {
   private_subnets          = module.vpc.private_subnets
   ecs_src_sg_id            = module.security_group.ecs_src_sg_id
   ecs_dashboard_sg_id      = module.security_group.ecs_dashboard_sg_id
+  db_username              = module.db.db_name
+  db_endpoint              = module.db.db_endpoint
+  db_name                  = module.db.db_name
+  db_password              = module.db.db_password
 }
 
 module "iam" {
@@ -59,4 +63,10 @@ module "dns" {
     "ns2" = module.route53.hosted_zone_ns[2]
     "ns3" = module.route53.hosted_zone_ns[3]
   }
+}
+
+module "db" {
+  source         = "./modules/db"
+  db_sg_id       = module.security_group.db_sg_id
+  db_subnet_name = module.vpc.db_subnet_name
 }

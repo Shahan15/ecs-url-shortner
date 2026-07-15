@@ -98,3 +98,12 @@ resource "aws_vpc_endpoint" "s3" {
   
   route_table_ids   = [aws_route_table.private_route.id]
 }
+
+# ==========================================
+# DB SUBNET
+# ==========================================
+
+resource "aws_db_subnet_group" "db_subnet" {
+  name       = "main-db-subnet-group"
+  subnet_ids = aws_subnet.private-subnet[*].id
+}

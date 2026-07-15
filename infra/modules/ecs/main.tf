@@ -27,7 +27,17 @@ resource "aws_ecs_task_definition" "url-src-td" {
           {
             "containerPort" : ${var.src_container_port}
           }
-        ]
+        ],
+        "environment": [
+      {
+        "name": "DATABASE_URL",
+        "value": "postgres://${var.db_username}:${var.db_password}@${var.db_endpoint}/${var.db_name}"
+      },
+      {
+        "name": "PORT",
+        "value": "${var.src_container_port}"
+      }
+    ]
     }
 ]
 TASK_DEFINITION
@@ -56,7 +66,7 @@ resource "aws_ecs_service" "url-src-ecs-service" {
     security_groups  = [var.ecs_src_sg_id]
     assign_public_ip = false
   }
-  
+
 }
 
 
@@ -80,7 +90,17 @@ resource "aws_ecs_task_definition" "url-dashboard-td" {
           {
             "containerPort" : ${var.dashboard_container_port}
           }
-        ]
+        ],
+        "environment": [
+      {
+        "name": "DATABASE_URL",
+        "value": "postgres://${var.db_username}:${var.db_password}@${var.db_endpoint}/${var.db_name}"
+      },
+      {
+        "name": "PORT",
+        "value": "${var.dashboard_container_port}"
+      }
+    ]
     }
 ]
 TASK_DEFINITION
@@ -97,6 +117,8 @@ resource "aws_ecs_service" "url-dashboard-ecs-service" {
   task_definition = aws_ecs_task_definition.url-dashboard-td.id
   desired_count   = 1
   launch_type     = "FARGATE"
+
+  health_check_grace_period_seconds = 60
 
   load_balancer {
     target_group_arn = var.dashboard-tg-arn

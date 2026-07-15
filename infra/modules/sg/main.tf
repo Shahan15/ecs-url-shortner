@@ -94,3 +94,28 @@ resource "aws_security_group" "vpc_endpoints_sg" {
   }
 }
 
+# Dedicated Security Group for RDS Postgres
+resource "aws_security_group" "db_sg" {
+  name        = "db_sg"
+  description = "Allow inbound traffic to RDS from ECS Tasks"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [
+      aws_security_group.ecs_src_sg.id,
+      aws_security_group.ecs_dashboard_sg.id
+    ]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+
