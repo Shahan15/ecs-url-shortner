@@ -26,10 +26,12 @@ module "ecs" {
   private_subnets          = module.vpc.private_subnets
   ecs_src_sg_id            = module.security_group.ecs_src_sg_id
   ecs_dashboard_sg_id      = module.security_group.ecs_dashboard_sg_id
+  ecs_worker_sg_id         = module.security_group.ecs_worker_sg_id
   db_username              = module.db.db_name
   db_endpoint              = module.db.db_endpoint
   db_name                  = module.db.db_name
   db_password              = module.db.db_password
+  sqs_url                  = module.sqs.sqs_url
 }
 
 module "iam" {
@@ -69,4 +71,8 @@ module "db" {
   source         = "./modules/db"
   db_sg_id       = module.security_group.db_sg_id
   db_subnet_name = module.vpc.db_subnet_name
+}
+
+module "sqs" {
+  source = "./modules/sqs"
 }

@@ -37,6 +37,11 @@ variable "ecs_dashboard_sg_id" {
   description = "ECS Dashboard Container security group ID"
 }
 
+variable "ecs_worker_sg_id" {
+  type        = string
+  description = "ECS worker container security group ID"
+}
+
 variable "db_username" {
   type        = string
   description = "The username for the RDS PostgreSQL database"
@@ -45,7 +50,7 @@ variable "db_username" {
 variable "db_password" {
   type        = string
   description = "The password for the RDS PostgreSQL database"
-  sensitive   = true 
+  sensitive   = true
 }
 
 variable "db_endpoint" {
@@ -56,4 +61,9 @@ variable "db_endpoint" {
 variable "db_name" {
   type        = string
   description = "The default database name"
+}
+
+variable "sqs_url" {
+  type        = string
+  description = "SQL URL"
 }

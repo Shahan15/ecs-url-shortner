@@ -4,10 +4,10 @@ resource "aws_security_group" "alb_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port        = 80
-    to_port          = 80
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"] 
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
@@ -32,10 +32,10 @@ resource "aws_security_group" "ecs_src_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port        = 8080
-    to_port          = 8080
-    protocol         = "tcp"
-    security_groups = [aws_security_group.alb_sg.id] 
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb_sg.id]
 
   }
 
@@ -54,12 +54,26 @@ resource "aws_security_group" "ecs_dashboard_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port        = 8081
-    to_port          = 8081
-    protocol         = "tcp"
-    security_groups = [aws_security_group.alb_sg.id] 
+    from_port       = 8081
+    to_port         = 8081
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb_sg.id]
 
   }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# ECS SERVICE FOR WORKER SERVICE 
+resource "aws_security_group" "ecs_worker_sg" {
+  name        = "ecs_worker_sg"
+  description = "Security Group for ECS to only allow traffic from ALB for worker API"
+  vpc_id      = var.vpc_id
 
   egress {
     from_port   = 0
@@ -77,9 +91,9 @@ resource "aws_security_group" "vpc_endpoints_sg" {
 
   # Allow inbound HTTPS (443) ONLY from ECS task security groups
   ingress {
-    from_port       = 443
-    to_port         = 443
-    protocol        = "tcp"
+    from_port = 443
+    to_port   = 443
+    protocol  = "tcp"
     security_groups = [
       aws_security_group.ecs_src_sg.id,
       aws_security_group.ecs_dashboard_sg.id
@@ -101,9 +115,9 @@ resource "aws_security_group" "db_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
+    from_port = 5432
+    to_port   = 5432
+    protocol  = "tcp"
     security_groups = [
       aws_security_group.ecs_src_sg.id,
       aws_security_group.ecs_dashboard_sg.id
