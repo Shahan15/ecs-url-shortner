@@ -3,6 +3,11 @@ data "aws_ecr_repository" "url-shortner-ecr" {
   name = "url-shortner"
 }
 
+# resource "aws_cloudwatch_log_group" "ecs_dashboard_log_group" {
+#   name              = "/ecs/url-short-dashboard"
+#   retention_in_days = 7
+# }
+
 resource "aws_ecs_cluster" "url-short-ecs-cluster" {
   name = "url-short-ecs-cluster"
 }
@@ -87,11 +92,11 @@ resource "aws_ecs_task_definition" "url-dashboard-td" {
     "memory": 2048,
     "essential": true,
     "portMappings" : [
-          {
-            "containerPort" : ${var.dashboard_container_port}
-          }
-        ],
-        "environment": [
+      {
+        "containerPort" : ${var.dashboard_container_port}
+      }
+    ],
+    "environment": [
       {
         "name": "DATABASE_URL",
         "value": "postgres://${var.db_username}:${var.db_password}@${var.db_endpoint}/${var.db_name}"
@@ -101,7 +106,7 @@ resource "aws_ecs_task_definition" "url-dashboard-td" {
         "value": "${var.dashboard_container_port}"
       }
     ]
-    }
+  }
 ]
 TASK_DEFINITION
 

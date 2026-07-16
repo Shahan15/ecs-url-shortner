@@ -74,7 +74,7 @@ resource "aws_lb_listener_rule" "dashboard_routing" {
       values = [
         "/summary*",
         "/top*",
-        "recent*"
+        "/recent*"
       ]
     }
   }

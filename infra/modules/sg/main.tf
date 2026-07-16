@@ -96,7 +96,8 @@ resource "aws_security_group" "vpc_endpoints_sg" {
     protocol  = "tcp"
     security_groups = [
       aws_security_group.ecs_src_sg.id,
-      aws_security_group.ecs_dashboard_sg.id
+      aws_security_group.ecs_dashboard_sg.id,
+      aws_security_group.ecs_worker_sg.id
     ]
   }
 
@@ -120,7 +121,8 @@ resource "aws_security_group" "db_sg" {
     protocol  = "tcp"
     security_groups = [
       aws_security_group.ecs_src_sg.id,
-      aws_security_group.ecs_dashboard_sg.id
+      aws_security_group.ecs_dashboard_sg.id,
+      aws_security_group.ecs_worker_sg.id
     ]
   }
 

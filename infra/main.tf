@@ -27,7 +27,7 @@ module "ecs" {
   ecs_src_sg_id            = module.security_group.ecs_src_sg_id
   ecs_dashboard_sg_id      = module.security_group.ecs_dashboard_sg_id
   ecs_worker_sg_id         = module.security_group.ecs_worker_sg_id
-  db_username              = module.db.db_name
+  db_username              = module.db.db_username
   db_endpoint              = module.db.db_endpoint
   db_name                  = module.db.db_name
   db_password              = module.db.db_password

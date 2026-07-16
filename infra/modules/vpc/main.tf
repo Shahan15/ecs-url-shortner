@@ -95,9 +95,18 @@ resource "aws_vpc_endpoint" "s3" {
   vpc_id            = aws_vpc.url-vpc.id
   service_name      = "com.amazonaws.eu-west-1.s3"
   vpc_endpoint_type = "Gateway"
-  
   route_table_ids   = [aws_route_table.private_route.id]
 }
+
+
+# resource "aws_vpc_endpoint" "cloudwatch_logs_endpoint" {
+#   vpc_id              = aws_vpc.url-vpc.id
+#   service_name        = "com.amazonaws.eu-west-1.logs"
+#   vpc_endpoint_type   = "Interface"
+#   private_dns_enabled = true
+#   subnet_ids          = aws_subnet.private-subnet[*].id 
+#   security_group_ids  = [var.vpc_endpoints_sg]
+# }
 
 # ==========================================
 # DB SUBNET
