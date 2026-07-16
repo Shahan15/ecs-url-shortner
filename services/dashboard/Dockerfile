@@ -8,8 +8,10 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 CGO_ENABLED=0 go build -o /services/dashboard-executable
 
 #Stage 2: Only single binary executable
-FROM scratch AS final
+FROM alpine:3.19 AS final
 WORKDIR /dashboard
+RUN apk --no-cache add ca-certificates
 COPY --from=executable /services/dashboard-executable .
+RUN chmod +x ./dashboard-executable
 EXPOSE 8081
 CMD [ "./dashboard-executable" ]
