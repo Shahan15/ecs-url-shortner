@@ -1,0 +1,123 @@
+name: Docker Build and Push Image
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "app/**"
+      - "services/dashboard/**"
+      - "services/worker/**"
+
+permissions:
+  id-token: write
+  contents: read
+
+# filter paths based on changes
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.path-changes.outputs.app }}
+      dashboard: ${{ steps.path-changes.outputs.dashboard }}
+      worker: ${{ steps.path-changes.outputs.worker }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Check changes paths
+        id: path-changes
+        uses: dorny/paths-filter@v4
+        with:
+          filters: |
+            app:
+              - 'app/**'
+            dashboard:
+              - 'services/dashboard/**'
+            worker:
+              - 'services/worker/**'
+
+  deploy:
+    needs: changes
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - id: app
+            context: ./app
+            service: url-short-src-ecs-service
+            container: url-src-container
+            task_def: app-task-def.json
+            tag: src
+
+          - id: dashboard
+            context: ./services/dashboard
+            service: url-short-dashboard-ecs-service
+            container: url-dashboard-container
+            task_def: dashboard-task-def.json
+            tag: dashboard
+
+          - id: worker
+            context: ./services/worker
+            service: url-short-worker-ecs-service
+            container: url-worker-container
+            task_def: worker-task-def.json
+            tag: worker
+
+    steps:
+      # Check if service should run/deploy
+      - name: Filter matrix job
+        id: filter
+        run: |
+          SHOULD_RUN="${{ needs.changes.outputs[matrix.id] }}"
+          echo "should_run=$SHOULD_RUN" >> $GITHUB_OUTPUT
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        if: steps.filter.outputs.should_run == 'true'
+
+        # Authenticate CLI with OIDC
+      - name: Configure AWS Credentials
+        if: steps.filter.outputs.should_run == 'true'
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/github-actions-role
+          aws-region: eu-west-1
+
+      # Log into ECR
+      - name: Log into ECR
+        id: login-into-ecr
+        if: steps.filter.outputs.should_run == 'true'
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        if: steps.filter.outputs.should_run == 'true'
+        uses: docker/setup-buildx-action@v4
+
+      # Tag and build the image
+      - name: Tag, Build + Push Image
+        uses: docker/build-push-action@v7
+        id: build-image
+        if: steps.filter.outputs.should_run == 'true'
+        with:
+          platforms: linux/arm64
+          context: ${{ matrix.context }}
+          push: true
+          tags: ${{ steps.login-into-ecr.outputs.registry }}/url-shortner:${{ matrix.tag }}-${{ github.sha }}
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        if: steps.filter.outputs.should_run == 'true'
+        with:
+          task-definition: ${{matrix.task_def}}
+          container-name: ${{matrix.container}}
+          image: ${{ steps.login-into-ecr.outputs.registry }}/url-shortner:${{ matrix.tag }}-${{ github.sha }}
+
+        # Push to ECR
+      - name: Deploy to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        if: steps.filter.outputs.should_run == 'true'
+        with:
+          task-definition: ${{steps.render-task-def.outputs.task-definition}}
+          service: ${{matrix.service}}
+          cluster: url-short-ecs-cluster
+          wait-for-service-stability: true
