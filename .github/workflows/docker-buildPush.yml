@@ -1,4 +1,5 @@
 name: Docker Build and Push Image
+
 on:
   workflow_dispatch:
   push:
@@ -12,7 +13,6 @@ permissions:
   id-token: write
   contents: read
 
-# filter paths based on changes
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -24,6 +24,7 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
       - name: Check changes paths
         id: path-changes
         uses: dorny/paths-filter@v4
@@ -68,14 +69,18 @@ jobs:
       - name: Filter matrix job
         id: filter
         run: |
-          SHOULD_RUN="${{ needs.changes.outputs[matrix.id] }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            SHOULD_RUN="true"
+          else
+            SHOULD_RUN="${{ needs.changes.outputs[matrix.id] }}"
+          fi
           echo "should_run=$SHOULD_RUN" >> $GITHUB_OUTPUT
 
       - name: Checkout Code
-        uses: actions/checkout@v4
         if: steps.filter.outputs.should_run == 'true'
+        uses: actions/checkout@v4
 
-        # Authenticate CLI with OIDC
+      # Authenticate CLI with OIDC
       - name: Configure AWS Credentials
         if: steps.filter.outputs.should_run == 'true'
         uses: aws-actions/configure-aws-credentials@v6.1.0
@@ -85,8 +90,8 @@ jobs:
 
       # Log into ECR
       - name: Log into ECR
-        id: login-into-ecr
         if: steps.filter.outputs.should_run == 'true'
+        id: login-into-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Set up Docker Buildx
@@ -95,9 +100,9 @@ jobs:
 
       # Tag and build the image
       - name: Tag, Build + Push Image
-        uses: docker/build-push-action@v7
-        id: build-image
         if: steps.filter.outputs.should_run == 'true'
+        id: build-image
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/arm64
           context: ${{ matrix.context }}
@@ -105,20 +110,19 @@ jobs:
           tags: ${{ steps.login-into-ecr.outputs.registry }}/url-shortner:${{ matrix.tag }}-${{ github.sha }}
 
       - name: Fill in the new image ID in the Amazon ECS task definition
+        if: steps.filter.outputs.should_run == 'true'
         id: render-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
-        if: steps.filter.outputs.should_run == 'true'
         with:
-          task-definition-family: ${{matrix.task-definition-family}}
-          container-name: ${{matrix.container}}
+          task-definition-family: ${{ matrix.task-definition-family }}
+          container-name: ${{ matrix.container }}
           image: ${{ steps.login-into-ecr.outputs.registry }}/url-shortner:${{ matrix.tag }}-${{ github.sha }}
 
-        # Push to ECR
       - name: Deploy to Amazon ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         if: steps.filter.outputs.should_run == 'true'
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
-          task-definition: ${{steps.render-task-def.outputs.task-definition}}
-          service: ${{matrix.service}}
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          service: ${{ matrix.service }}
           cluster: url-short-ecs-cluster
           wait-for-service-stability: true
