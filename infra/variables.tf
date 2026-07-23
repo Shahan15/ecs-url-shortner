@@ -29,3 +29,8 @@ variable "cloudflare_zone_id" {
   description = "Cloudflare Zone ID"
   sensitive = true
 }
+
+variable "github_organisation_name" {
+  type = string
+  description = "Github organisation name"
+}

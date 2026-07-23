@@ -45,8 +45,8 @@ resource "aws_ecs_task_definition" "url-src-td" {
     ]
     }
 ]
-TASK_DEFINITION
 
+TASK_DEFINITION
   runtime_platform {
     operating_system_family = "LINUX"
     cpu_architecture        = "ARM64"

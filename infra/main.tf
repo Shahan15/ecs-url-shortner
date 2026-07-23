@@ -36,6 +36,7 @@ module "ecs" {
 
 module "iam" {
   source = "./modules/iam"
+  github_organisation_name = var.github_organisation_name
 }
 
 module "acm" {
