@@ -30,7 +30,7 @@ resource "aws_iam_role_policy_attachment" "ecs-service-role-attach" {
 resource "aws_iam_openid_connect_provider" "github_openid" {
   url             = "https://token.actions.githubusercontent.com"
   client_id_list  = ["sts.amazonaws.com", ]
-  thumbprint_list = ["fffffffffffffffffffffffffffffffffffffff"]
+  thumbprint_list = ["ffffffffffffffffffffffffffffffffffffffff"]
 }
 
 
@@ -49,6 +49,8 @@ resource "aws_iam_role" "github-actions-role" {
         Condition = {
           StringEquals = {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+          }
+          StringLike = {
             "token.actions.githubusercontent.com:sub" = "repo:${var.github_organisation_name}/*"
           }
         }

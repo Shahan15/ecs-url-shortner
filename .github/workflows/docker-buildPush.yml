@@ -45,21 +45,21 @@ jobs:
             context: ./app
             service: url-short-src-ecs-service
             container: url-src-container
-            task_def: app-task-def.json
+            task-definition-family: url-src-td
             tag: src
 
           - id: dashboard
             context: ./services/dashboard
             service: url-short-dashboard-ecs-service
             container: url-dashboard-container
-            task_def: dashboard-task-def.json
+            task-definition-family: url-dashboard-td
             tag: dashboard
 
           - id: worker
             context: ./services/worker
             service: url-short-worker-ecs-service
             container: url-worker-container
-            task_def: worker-task-def.json
+            task-definition-family: url-worker-td
             tag: worker
 
     steps:
@@ -108,7 +108,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         if: steps.filter.outputs.should_run == 'true'
         with:
-          task-definition: ${{matrix.task_def}}
+          task-definition-family: ${{matrix.task-definition-family}}
           container-name: ${{matrix.container}}
           image: ${{ steps.login-into-ecr.outputs.registry }}/url-shortner:${{ matrix.tag }}-${{ github.sha }}
 

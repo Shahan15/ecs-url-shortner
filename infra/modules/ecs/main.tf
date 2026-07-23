@@ -72,6 +72,12 @@ resource "aws_ecs_service" "url-src-ecs-service" {
     assign_public_ip = false
   }
 
+  lifecycle {
+    ignore_changes = [
+      task_definition,
+    ]
+  }
+
 }
 
 
@@ -137,6 +143,12 @@ resource "aws_ecs_service" "url-dashboard-ecs-service" {
     assign_public_ip = false
   }
 
+  lifecycle {
+    ignore_changes = [
+      task_definition,
+    ]
+  }
+
 }
 
 # ECS Service for Worker/Click analytics
@@ -186,6 +198,12 @@ resource "aws_ecs_service" "url-worker-ecs-service" {
     subnets          = var.private_subnets
     security_groups  = [var.ecs_worker_sg_id]
     assign_public_ip = false
+  }
+
+  lifecycle {
+    ignore_changes = [
+      task_definition,
+    ]
   }
 
 }
