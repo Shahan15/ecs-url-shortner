@@ -26,6 +26,47 @@ resource "aws_iam_role_policy_attachment" "ecs-service-role-attach" {
 }
 
 
+
+# Task Role for container application permissions
+resource "aws_iam_role" "ecs-task-app-role" {
+  name = "ecs-task-app-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "ecs_task_sqs_policy" {
+  name = "ecs-task-sqs-policy"
+  role = aws_iam_role.ecs-task-app-role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage",
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+
 #OIDC IAM Config
 resource "aws_iam_openid_connect_provider" "github_openid" {
   url             = "https://token.actions.githubusercontent.com"

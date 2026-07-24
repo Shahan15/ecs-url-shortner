@@ -73,11 +73,11 @@ resource "aws_route_table_association" "private_assoc" {
 # 1. ECR API Endpoint
 resource "aws_vpc_endpoint" "ecr_api" {
   vpc_id              = aws_vpc.url-vpc.id
-  service_name        = "com.amazonaws.eu-west-1.ecr.api" 
-  vpc_endpoint_type   = "Interface" 
+  service_name        = "com.amazonaws.eu-west-1.ecr.api"
+  vpc_endpoint_type   = "Interface"
   security_group_ids  = [var.vpc_endpoints_sg]
   private_dns_enabled = true
-  subnet_ids          = aws_subnet.private-subnet[*].id 
+  subnet_ids          = aws_subnet.private-subnet[*].id
 }
 
 # 2. ECR Docker Endpoint
@@ -96,6 +96,18 @@ resource "aws_vpc_endpoint" "s3" {
   service_name      = "com.amazonaws.eu-west-1.s3"
   vpc_endpoint_type = "Gateway"
   route_table_ids   = [aws_route_table.private_route.id]
+}
+
+
+# SQS Endpoint 
+resource "aws_vpc_endpoint" "sqs" {
+  vpc_id              = aws_vpc.url-vpc.id
+  service_name        = "com.amazonaws.eu-west-1.sqs" 
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+
+  subnet_ids         = aws_subnet.private-subnet[*].id
+  security_group_ids = [var.vpc_endpoints_sg]
 }
 
 

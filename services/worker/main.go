@@ -11,10 +11,17 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	_ "github.com/lib/pq"
 )
 
-var db *sql.DB
+var (
+	db        *sql.DB
+	sqsClient *sqs.Client
+)
 
 type ClickEvent struct {
 	ShortCode string `json:"short_code"`
@@ -51,6 +58,14 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// Initialize AWS SQS Client
+	awsRegion := getEnv("AWS_REGION", "eu-west-1")
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(awsRegion))
+	if err != nil {
+		log.Fatalf("Failed to load AWS config: %v", err)
+	}
+	sqsClient = sqs.NewFromConfig(cfg)
+
 	// Health check endpoint
 	go func() {
 		mux := http.NewServeMux()
@@ -84,23 +99,23 @@ func main() {
 func migrate() {
 	migrations := []string{
 		`CREATE TABLE IF NOT EXISTS click_events (
-			id SERIAL PRIMARY KEY,
-			short_code VARCHAR(16) NOT NULL,
-			ip_address VARCHAR(45),
-			user_agent TEXT,
-			referer TEXT,
-			clicked_at TIMESTAMP NOT NULL,
-			processed_at TIMESTAMP DEFAULT NOW()
-		)`,
+            id SERIAL PRIMARY KEY,
+            short_code VARCHAR(16) NOT NULL,
+            ip_address VARCHAR(45),
+            user_agent TEXT,
+            referer TEXT,
+            clicked_at TIMESTAMP NOT NULL,
+            processed_at TIMESTAMP DEFAULT NOW()
+        )`,
 		`CREATE INDEX IF NOT EXISTS idx_click_events_short_code ON click_events(short_code)`,
 		`CREATE INDEX IF NOT EXISTS idx_click_events_clicked_at ON click_events(clicked_at)`,
 		`CREATE TABLE IF NOT EXISTS click_stats_hourly (
-			short_code VARCHAR(16) NOT NULL,
-			hour TIMESTAMP NOT NULL,
-			clicks INTEGER DEFAULT 0,
-			unique_ips INTEGER DEFAULT 0,
-			PRIMARY KEY (short_code, hour)
-		)`,
+            short_code VARCHAR(16) NOT NULL,
+            hour TIMESTAMP NOT NULL,
+            clicks INTEGER DEFAULT 0,
+            unique_ips INTEGER DEFAULT 0,
+            PRIMARY KEY (short_code, hour)
+        )`,
 	}
 	for _, m := range migrations {
 		if _, err := db.Exec(m); err != nil {
@@ -117,27 +132,55 @@ func pollSQS(ctx context.Context, queueURL string) {
 			log.Println("Worker stopped")
 			return
 		default:
-			messages := receiveSQSMessages(queueURL)
+			messages := receiveSQSMessages(ctx, queueURL)
 			for _, msg := range messages {
-				if err := processClickEvent(msg); err != nil {
+				if msg.Body == nil {
+					continue
+				}
+
+				if err := processClickEvent(*msg.Body); err != nil {
 					log.Printf("Failed to process event: %v", err)
 					continue
 				}
-				// Delete message from queue after successful processing
-				log.Printf("Processed click event: %s", msg)
+
+				// Delete message from queue after successful DB insert
+				if err := deleteSQSMessage(ctx, queueURL, msg.ReceiptHandle); err != nil {
+					log.Printf("Failed to delete message from SQS: %v", err)
+				} else {
+					log.Printf("Successfully processed and deleted message ID: %s", *msg.MessageId)
+				}
 			}
 			if len(messages) == 0 {
-				time.Sleep(5 * time.Second)
+				time.Sleep(2 * time.Second)
 			}
 		}
 	}
 }
 
-func receiveSQSMessages(queueURL string) []string {
-	// Students implement with AWS SDK SQS ReceiveMessage
-	// Use long polling: WaitTimeSeconds = 20
-	// MaxNumberOfMessages = 10
-	return nil
+func receiveSQSMessages(ctx context.Context, queueURL string) []types.Message {
+	if sqsClient == nil {
+		return nil
+	}
+
+	output, err := sqsClient.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
+		QueueUrl:            aws.String(queueURL),
+		MaxNumberOfMessages: 10,
+		WaitTimeSeconds:     20, // Long polling
+	})
+	if err != nil {
+		log.Printf("Error receiving SQS messages: %v", err)
+		return nil
+	}
+
+	return output.Messages
+}
+
+func deleteSQSMessage(ctx context.Context, queueURL string, receiptHandle *string) error {
+	_, err := sqsClient.DeleteMessage(ctx, &sqs.DeleteMessageInput{
+		QueueUrl:      aws.String(queueURL),
+		ReceiptHandle: receiptHandle,
+	})
+	return err
 }
 
 func processClickEvent(raw string) error {
@@ -154,7 +197,7 @@ func processClickEvent(raw string) error {
 	// Insert raw click event
 	_, err = db.Exec(
 		`INSERT INTO click_events (short_code, ip_address, user_agent, referer, clicked_at)
-		 VALUES ($1, $2, $3, $4, $5)`,
+         VALUES ($1, $2, $3, $4, $5)`,
 		event.ShortCode, event.IP, event.UserAgent, event.Referer, clickedAt,
 	)
 	if err != nil {
@@ -165,9 +208,9 @@ func processClickEvent(raw string) error {
 	hour := clickedAt.Truncate(time.Hour)
 	_, err = db.Exec(
 		`INSERT INTO click_stats_hourly (short_code, hour, clicks, unique_ips)
-		 VALUES ($1, $2, 1, 1)
-		 ON CONFLICT (short_code, hour)
-		 DO UPDATE SET clicks = click_stats_hourly.clicks + 1`,
+         VALUES ($1, $2, 1, 1)
+         ON CONFLICT (short_code, hour)
+         DO UPDATE SET clicks = click_stats_hourly.clicks + 1`,
 		event.ShortCode, hour,
 	)
 

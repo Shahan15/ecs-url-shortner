@@ -23,6 +23,7 @@ module "ecs" {
   src_container_port       = var.src_container_port
   dashboard_container_port = var.dashboard_container_port
   ecs-service-role-arn     = module.iam.ecs-service-role-arn
+  ecs-task-app-role-arn    = module.iam.ecs-task-app-role-arn
   private_subnets          = module.vpc.private_subnets
   ecs_src_sg_id            = module.security_group.ecs_src_sg_id
   ecs_dashboard_sg_id      = module.security_group.ecs_dashboard_sg_id
@@ -35,7 +36,7 @@ module "ecs" {
 }
 
 module "iam" {
-  source = "./modules/iam"
+  source                   = "./modules/iam"
   github_organisation_name = var.github_organisation_name
 }
 

@@ -17,6 +17,7 @@ resource "aws_ecs_task_definition" "url-src-td" {
   family                   = "url-src-td"
   requires_compatibilities = ["FARGATE"]
   execution_role_arn       = var.ecs-service-role-arn
+  task_role_arn            = var.ecs-task-app-role-arn
   network_mode             = "awsvpc"
   cpu                      = 1024
   memory                   = 2048
@@ -41,6 +42,10 @@ resource "aws_ecs_task_definition" "url-src-td" {
       {
         "name": "PORT",
         "value": "${var.src_container_port}"
+      },
+      {
+        "name": "SQS_QUEUE_URL",
+        "value": "${var.sqs_url}"
       }
     ]
     }
@@ -87,6 +92,7 @@ resource "aws_ecs_task_definition" "url-dashboard-td" {
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   execution_role_arn       = var.ecs-service-role-arn
+  task_role_arn            = var.ecs-task-app-role-arn
   cpu                      = 1024
   memory                   = 2048
   container_definitions    = <<TASK_DEFINITION
@@ -157,6 +163,7 @@ resource "aws_ecs_task_definition" "url-worker-td" {
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   execution_role_arn       = var.ecs-service-role-arn
+  task_role_arn            = var.ecs-task-app-role-arn
   cpu                      = 1024
   memory                   = 2048
   container_definitions    = <<TASK_DEFINITION

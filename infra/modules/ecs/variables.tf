@@ -12,6 +12,12 @@ variable "ecs-service-role-arn" {
   description = "IAM Role required for ECS Service"
 }
 
+
+variable "ecs-task-app-role-arn" {
+  type        = string
+  description = "ECS Task role for SQS"
+}
+
 variable "src-tg-arn" {
   type        = string
   description = "Src api Target Group ARN"
