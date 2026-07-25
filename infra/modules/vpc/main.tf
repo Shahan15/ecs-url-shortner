@@ -111,14 +111,14 @@ resource "aws_vpc_endpoint" "sqs" {
 }
 
 
-# resource "aws_vpc_endpoint" "cloudwatch_logs_endpoint" {
-#   vpc_id              = aws_vpc.url-vpc.id
-#   service_name        = "com.amazonaws.eu-west-1.logs"
-#   vpc_endpoint_type   = "Interface"
-#   private_dns_enabled = true
-#   subnet_ids          = aws_subnet.private-subnet[*].id 
-#   security_group_ids  = [var.vpc_endpoints_sg]
-# }
+resource "aws_vpc_endpoint" "cloudwatch_logs_endpoint" {
+  vpc_id              = aws_vpc.url-vpc.id
+  service_name        = "com.amazonaws.eu-west-1.logs"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+  subnet_ids          = aws_subnet.private-subnet[*].id 
+  security_group_ids  = [var.vpc_endpoints_sg]
+}
 
 # ==========================================
 # DB SUBNET

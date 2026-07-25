@@ -2,17 +2,18 @@
 data "aws_ecr_repository" "url-shortner-ecr" {
   name = "url-shortner"
 }
-
-# resource "aws_cloudwatch_log_group" "ecs_dashboard_log_group" {
-#   name              = "/ecs/url-short-dashboard"
-#   retention_in_days = 7
-# }
-
 resource "aws_ecs_cluster" "url-short-ecs-cluster" {
   name = "url-short-ecs-cluster"
 }
 
 # ECS SERVICE FOR SRC CONTAINER - FRONTEND/FASTAPI API
+resource "aws_cloudwatch_log_group" "ecs_src_log_group" {
+  name              = "/ecs/url-src-td"
+  retention_in_days = 7
+}
+
+
+
 resource "aws_ecs_task_definition" "url-src-td" {
   family                   = "url-src-td"
   requires_compatibilities = ["FARGATE"]
@@ -46,8 +47,20 @@ resource "aws_ecs_task_definition" "url-src-td" {
       {
         "name": "SQS_QUEUE_URL",
         "value": "${var.sqs_url}"
+      },
+      {
+        "name": "AWS_REGION",
+        "value": "eu-west-1"
       }
-    ]
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${aws_cloudwatch_log_group.ecs_src_log_group.name}",
+        "awslogs-region": "eu-west-1",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
     }
 ]
 
@@ -158,6 +171,11 @@ resource "aws_ecs_service" "url-dashboard-ecs-service" {
 }
 
 # ECS Service for Worker/Click analytics
+resource "aws_cloudwatch_log_group" "ecs_worker_log_group" {
+  name              = "/ecs/url-worker-td"
+  retention_in_days = 7
+}
+
 resource "aws_ecs_task_definition" "url-worker-td" {
   family                   = "url-worker-td"
   requires_compatibilities = ["FARGATE"]
@@ -182,8 +200,20 @@ resource "aws_ecs_task_definition" "url-worker-td" {
       {
         "name": "SQS_QUEUE_URL",
         "value": "${var.sqs_url}"
+      },
+      {
+        "name": "AWS_REGION",
+        "value": "eu-west-1"
       }
-    ]
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${aws_cloudwatch_log_group.ecs_worker_log_group.name}",
+        "awslogs-region": "eu-west-1",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
     }
 ]
 TASK_DEFINITION
