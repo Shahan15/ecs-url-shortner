@@ -1,6 +1,7 @@
 #Stage 1: Compile go into binary executable
 FROM golang:1.26.2-alpine AS executable
 WORKDIR /services/dashboard
+RUN apk add --no-cache ca-certificates
 COPY go.mod .
 RUN go mod download
 COPY . .
@@ -12,6 +13,7 @@ FROM alpine:3.19 AS final
 WORKDIR /dashboard
 RUN apk --no-cache add ca-certificates
 COPY --from=executable /services/dashboard-executable .
+COPY --from=executable /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 RUN chmod +x ./dashboard-executable
 EXPOSE 8081
 CMD [ "./dashboard-executable" ]

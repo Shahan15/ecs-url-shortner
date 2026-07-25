@@ -1,10 +1,11 @@
 #Stage 1: compile into single executable bimary
 FROM golang:1.26.2-alpine AS executable
 WORKDIR /services/worker
+RUN apk add --no-cache ca-certificates
 COPY go.mod .
 RUN go mod download
 COPY . .
-RUN mount=type=cache,target=/root/.cache/go-build \
+RUN --mount=type=cache,target=/root/.cache/go-build \
 CGO_ENABLED=0 go build -o /services/worker-executable
 
 
@@ -12,4 +13,5 @@ CGO_ENABLED=0 go build -o /services/worker-executable
 FROM scratch
 WORKDIR /worker
 COPY --from=executable /services/worker-executable .
+COPY --from=executable /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 CMD [ "./worker-executable" ]
