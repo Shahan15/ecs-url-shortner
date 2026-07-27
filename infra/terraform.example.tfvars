@@ -1,5 +1,5 @@
-src_container_port       = 
-dashboard_container_port = 
+src_container_port       = x
+dashboard_container_port = x
 
 
 domain_name = "*.example.co.uk"

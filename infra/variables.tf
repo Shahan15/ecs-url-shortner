@@ -14,7 +14,7 @@ variable "domain_name" {
 }
 
 variable "sub_domain" {
-  type = string
+  type        = string
   description = "Sub Domain"
 }
 
@@ -27,10 +27,10 @@ variable "cloudflare_api_token" {
 variable "cloudflare_zone_id" {
   type        = string
   description = "Cloudflare Zone ID"
-  sensitive = true
+  sensitive   = true
 }
 
 variable "github_organisation_name" {
-  type = string
+  type        = string
   description = "Github organisation name"
 }
