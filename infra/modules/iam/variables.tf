@@ -1,4 +1,4 @@
 variable "github_organisation_name" {
-  type = string
+  type        = string
   description = "Github organisation name"
 }

@@ -87,7 +87,7 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
   vpc_endpoint_type   = "Interface"
   security_group_ids  = [var.vpc_endpoints_sg]
   private_dns_enabled = true
-  subnet_ids          = aws_subnet.private-subnet[*].id 
+  subnet_ids          = aws_subnet.private-subnet[*].id
 }
 
 # 3. S3 Endpoint
@@ -102,7 +102,7 @@ resource "aws_vpc_endpoint" "s3" {
 # SQS Endpoint 
 resource "aws_vpc_endpoint" "sqs" {
   vpc_id              = aws_vpc.url-vpc.id
-  service_name        = "com.amazonaws.eu-west-1.sqs" 
+  service_name        = "com.amazonaws.eu-west-1.sqs"
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
 
@@ -116,7 +116,7 @@ resource "aws_vpc_endpoint" "cloudwatch_logs_endpoint" {
   service_name        = "com.amazonaws.eu-west-1.logs"
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
-  subnet_ids          = aws_subnet.private-subnet[*].id 
+  subnet_ids          = aws_subnet.private-subnet[*].id
   security_group_ids  = [var.vpc_endpoints_sg]
 }
 

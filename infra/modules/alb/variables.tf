@@ -9,11 +9,11 @@ variable "public_subnets" {
 }
 
 variable "vpc_id" {
-  type = string
+  type        = string
   description = "VPC ID"
 }
 
 variable "acm-cert-arn" {
-  type = string
+  type        = string
   description = "ACM Cert ARN"
 }

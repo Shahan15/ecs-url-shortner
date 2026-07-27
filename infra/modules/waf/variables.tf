@@ -1,4 +1,4 @@
 variable "alb-arn" {
-  type = string
+  type        = string
   description = "ALB ARN"
 }

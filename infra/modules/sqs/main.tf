@@ -12,5 +12,5 @@ resource "aws_sqs_queue" "sqs_queue" {
 
 resource "aws_sqs_queue" "sqs_queue_deadletter" {
   name                      = "sqs_queue_deadletter"
-  message_retention_seconds = 1209600 
+  message_retention_seconds = 1209600
 }
