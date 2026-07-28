@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: ["main"]
+    paths:
+      - 'infra/**'  
 
 defaults:
   run:
@@ -31,17 +33,13 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform fmt
-        if: success()
-        run: terraform fmt
+        run: terraform fmt -check
 
       - name: Terraform init
-        if: success()
         run: terraform init
 
       - name: Terraform plan
-        if: success()
         run: terraform plan
 
       - name: Terraform apply
-        if: success()
-        run: terraform apply -auto-aprove
+        run: terraform apply -auto-approve
