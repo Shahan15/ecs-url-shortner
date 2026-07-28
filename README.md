@@ -64,15 +64,19 @@ terraform apply -auto-approve
 
 This will generate the S3 bucket required to store your .tfstate file. Enabling versioning. 
 
-### 2. Configure GitHub Secrets
+### 2. Configure GitHub Secrets & Variables
 
-| Secret Name | Description | Example / Format |
-| :--- | :--- | :--- |
-| `AWS_ACCOUNT_ID` | Your AWS Account ID, this is used to for the github actions IAM Role to authenticate the CLI via OIDC | `arn:aws:iam::123456789012:role/github-actions-role` |
+| Name | Type | Description | Example / Format |
+| :--- | :--- | :--- | :--- |
+| `AWS_ACCOUNT_ID` | Variable | AWS Account ID used by GitHub Actions to assume the IAM role via OIDC | `123456789012` |
 
 
 
 ## Security profile and decisions 
+* IAM OIDC Identity Providers: GitHub Actions workflows communicates with AWS securely using OpenID Connect roles. No permanent AWS credentials or tokens are stored in the repo.
 
+* VPC Endpoints: Route traffic to AWS services privately within the AWS network, bypassing the internet to improve security and reduce NAT Gateway data transfer costs.
+
+* Network Isolation: The application container layer possesses zero public IP addresses. It is locked inside a private subnet layer protected by stateful security groups that only accept incoming inputs on port 8080 stemming exclusively from the ALB's security group ID.
 
 ## CI/CD Pipelines
