@@ -154,7 +154,7 @@ resource "aws_iam_role_policy" "github_actions_policy" {
           "s3:PutObject",
           "s3:DeleteObject"
         ]
-        Resource = "arn:aws:s3:::shahan-url-short-tfstate-bucket/url-short/terraform.tfstate*"
+        Resource = "arn:aws:s3:::shahan-url-short-tfstate-bucket/*"
       }
     ]
   })

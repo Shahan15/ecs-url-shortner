@@ -5,7 +5,7 @@ on:
   push:
     branches: ["main"]
     paths:
-      - 'infra/**'  
+      - "infra/**"
 
 defaults:
   run:
@@ -39,7 +39,11 @@ jobs:
         run: terraform init
 
       - name: Terraform plan
+        env:
+          TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: terraform plan
 
       - name: Terraform apply
+        env:
+          TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: terraform apply -auto-approve
