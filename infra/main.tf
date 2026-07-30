@@ -33,6 +33,7 @@ module "ecs" {
   db_name                  = module.db.db_name
   db_password              = module.db.db_password
   sqs_url                  = module.sqs.sqs_url
+  redis_endpoint_address   = module.elasticache.redis_endpoint
 }
 
 module "iam" {
@@ -77,4 +78,10 @@ module "db" {
 
 module "sqs" {
   source = "./modules/sqs"
+}
+
+module "elasticache" {
+  source                        = "./modules/elasticache"
+  redis_sg_id                   = module.security_group.redis_sg_id
+  elasticache_subnet_group_name = module.vpc.elasticache_subnet_group_name
 }

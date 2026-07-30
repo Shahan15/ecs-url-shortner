@@ -17,3 +17,8 @@ output "db_subnet_name" {
   value       = aws_db_subnet_group.db_subnet.name
   description = "DB Subnet name"
 }
+
+output "elasticache_subnet_group_name" {
+  value       = aws_elasticache_subnet_group.elasticache_subnet_group.name
+  description = "Elasticache subnet group name"
+}

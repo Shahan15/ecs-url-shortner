@@ -51,6 +51,14 @@ resource "aws_ecs_task_definition" "url-src-td" {
       {
         "name": "AWS_REGION",
         "value": "eu-west-1"
+      },
+      {
+        "name": "REDIS_HOST",
+        "value": "${var.redis_endpoint_address}"
+      },
+      {
+        "name": "REDIS_PORT",
+        "value": "6379"
       }
     ],
     "logConfiguration": {
@@ -129,6 +137,14 @@ resource "aws_ecs_task_definition" "url-dashboard-td" {
       {
         "name": "PORT",
         "value": "${var.dashboard_container_port}"
+      },
+      {
+        "name": "REDIS_HOST",
+        "value": "${var.redis_endpoint_address}"
+      },
+      {
+        "name": "REDIS_PORT",
+        "value": "6379"
       }
     ]
   }
@@ -204,6 +220,14 @@ resource "aws_ecs_task_definition" "url-worker-td" {
       {
         "name": "AWS_REGION",
         "value": "eu-west-1"
+      },
+      {
+        "name": "REDIS_HOST",
+        "value": "${var.redis_endpoint_address}"
+      },
+      {
+        "name": "REDIS_PORT",
+        "value": "6379"
       }
     ],
     "logConfiguration": {

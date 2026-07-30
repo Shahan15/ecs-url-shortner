@@ -73,3 +73,8 @@ variable "sqs_url" {
   type        = string
   description = "SQL URL"
 }
+
+variable "redis_endpoint_address" {
+  type        = string
+  description = "Redis endpoint address"
+}

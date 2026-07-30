@@ -128,3 +128,12 @@ resource "aws_db_subnet_group" "db_subnet" {
   name       = "main-db-subnet-group"
   subnet_ids = aws_subnet.private-subnet[*].id
 }
+
+# ==========================================
+# ELASTICACHE SUBNET
+# ==========================================
+
+resource "aws_elasticache_subnet_group" "elasticache_subnet_group" {
+  name       = "elasticache-subnet-group"
+  subnet_ids = aws_subnet.private-subnet[*].id
+}
