@@ -12,11 +12,13 @@ variable "dashboard_container_port" {
 
 variable "domain_name" {
   type        = string
+  default     = "*.shahankhan.co.uk"
   description = "Domain Name"
 }
 
 variable "sub_domain" {
   type        = string
+  default     = "lnk.shahankhan.co.uk"
   description = "Sub Domain"
 }
 
@@ -34,5 +36,6 @@ variable "cloudflare_zone_id" {
 
 variable "github_organisation_name" {
   type        = string
+  default     = "Shahan15"
   description = "Github organisation name"
 }
