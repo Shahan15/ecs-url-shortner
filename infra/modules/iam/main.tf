@@ -109,13 +109,14 @@ resource "aws_iam_role_policy_attachment" "github-role-attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
 }
 
-resource "aws_iam_role_policy" "github_actions_ecs_policy" {
-  name = "github-actions-ecs-policy"
+resource "aws_iam_role_policy" "github_actions_policy" {
+  name = "github-actions-policy"
   role = aws_iam_role.github-actions-role.id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      # 1. ECS Permissions
       {
         Effect = "Allow"
         Action = [
@@ -135,6 +136,25 @@ resource "aws_iam_role_policy" "github_actions_ecs_policy" {
             "iam:PassedToService" = "ecs-tasks.amazonaws.com"
           }
         }
+      },
+      # 2. Terraform Backend: S3 Bucket Permissions
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket",
+          "s3:GetBucketLocation"
+        ]
+        Resource = "arn:aws:s3:::shahan-url-short-tfstate-bucket"
+      },
+      # Terraform Backend: S3 Object Permissions
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ]
+        Resource = "arn:aws:s3:::shahan-url-short-tfstate-bucket/url-short/terraform.tfstate*"
       }
     ]
   })
