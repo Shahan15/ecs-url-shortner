@@ -15,10 +15,11 @@ A high-availability, microservices-based URL shortener application containerised
 
 ## Demo 
 
-> **Note:** The video demonstrates the full AWS ECS Fargate infrastructure deployment process and application functionality.
+> **Note:** The video demonstrates the full AWS ECS Fargate infrastructure deployment process and application functionalities.
 
 ## Architecture
 
+![Architecture Diagram](<.github/assets/ArchitectureDiagram.png>)
 
 ## Design Decisions
 

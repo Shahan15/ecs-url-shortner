@@ -8,10 +8,18 @@ resource "aws_vpc" "url-vpc" {
   enable_dns_hostnames = true
 }
 
+# ==========================================
+# INTERNET GATEWAY
+# ==========================================
+
 # INTERNET GATEWAY
 resource "aws_internet_gateway" "url-internet-gateway" {
   vpc_id = aws_vpc.url-vpc.id
 }
+
+# ==========================================
+# SUBNETS
+# ==========================================
 
 # PUBLIC SUBNETS 
 resource "aws_subnet" "public-subnet" {
@@ -37,7 +45,10 @@ resource "aws_subnet" "private-subnet" {
   }
 }
 
+# ==========================================
 # ROUTE TABLES
+# ==========================================
+
 # PUBLIC ROUTE
 resource "aws_route_table" "public_route" {
   vpc_id = aws_vpc.url-vpc.id
@@ -52,6 +63,10 @@ resource "aws_route_table" "public_route" {
 resource "aws_route_table" "private_route" {
   vpc_id = aws_vpc.url-vpc.id
 }
+
+# ==========================================
+# ROUTE TABLE ASSOCIATION
+# ==========================================
 
 # ROUTE TABLE ASSOCIATION
 resource "aws_route_table_association" "public_assoc" {
