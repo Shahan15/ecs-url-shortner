@@ -31,7 +31,7 @@ module "ecs" {
   db_username              = module.db.db_username
   db_endpoint              = module.db.db_endpoint
   db_name                  = module.db.db_name
-  db_password              = module.db.db_password
+  db_secret_arn            = module.db.db_connection_secret_arn
   sqs_url                  = module.sqs.sqs_url
   redis_endpoint_address   = module.elasticache.redis_endpoint
 }
@@ -39,6 +39,7 @@ module "ecs" {
 module "iam" {
   source                   = "./modules/iam"
   github_organisation_name = var.github_organisation_name
+  db_secret_arn            = module.db.db_connection_secret_arn
 }
 
 module "acm" {
@@ -85,3 +86,5 @@ module "elasticache" {
   redis_sg_id                   = module.security_group.redis_sg_id
   elasticache_subnet_group_name = module.vpc.elasticache_subnet_group_name
 }
+
+

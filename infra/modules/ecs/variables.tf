@@ -53,9 +53,9 @@ variable "db_username" {
   description = "The username for the RDS PostgreSQL database"
 }
 
-variable "db_password" {
+variable "db_secret_arn" {
   type        = string
-  description = "The password for the RDS PostgreSQL database"
+  description = "Secrets Manager ARN"
   sensitive   = true
 }
 

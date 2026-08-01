@@ -1,6 +1,7 @@
 resource "aws_iam_role" "ecs-service-role" {
   name = "ecs-task-execution-role"
 
+  # Trust Policy: Specifies that ECS tasks are allowed to assume this role
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -11,7 +12,7 @@ resource "aws_iam_role" "ecs-service-role" {
         Principal = {
           Service = "ecs-tasks.amazonaws.com"
         }
-      },
+      }
     ]
   })
 
@@ -23,6 +24,24 @@ resource "aws_iam_role" "ecs-service-role" {
 resource "aws_iam_role_policy_attachment" "ecs-service-role-attach" {
   role       = aws_iam_role.ecs-service-role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+resource "aws_iam_role_policy" "ecs_execution_secrets_policy" {
+  name = "ecs-execution-secrets-policy"
+  role = aws_iam_role.ecs-service-role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = var.db_secret_arn
+      }
+    ]
+  })
 }
 
 

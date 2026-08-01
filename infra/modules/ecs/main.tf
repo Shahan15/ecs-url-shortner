@@ -6,13 +6,28 @@ resource "aws_ecs_cluster" "url-short-ecs-cluster" {
   name = "url-short-ecs-cluster"
 }
 
-# ECS SERVICE FOR SRC CONTAINER - FRONTEND/FASTAPI API
+# ------------------------------------------------------------------------------
+# CLOUDWATCH LOG GROUPS
+# ------------------------------------------------------------------------------
+
 resource "aws_cloudwatch_log_group" "ecs_src_log_group" {
   name              = "/ecs/url-src-td"
   retention_in_days = 7
 }
 
+resource "aws_cloudwatch_log_group" "ecs_worker_log_group" {
+  name              = "/ecs/url-worker-td"
+  retention_in_days = 7
+}
 
+resource "aws_cloudwatch_log_group" "ecs_dashboard_log_group" {
+  name              = "/ecs/url-dashboard-td"
+  retention_in_days = 7
+}
+
+# ------------------------------------------------------------------------------
+# 1. FRONTEND / FASTAPI API SERVICE
+# ------------------------------------------------------------------------------
 
 resource "aws_ecs_task_definition" "url-src-td" {
   family                   = "url-src-td"
@@ -22,57 +37,48 @@ resource "aws_ecs_task_definition" "url-src-td" {
   network_mode             = "awsvpc"
   cpu                      = 1024
   memory                   = 2048
-  container_definitions    = <<TASK_DEFINITION
-[
-  {
-    "name": "url-src-container",
-    "image": "${data.aws_ecr_repository.url-shortner-ecr.repository_url}:src-latest",
-    "cpu": 1024,
-    "memory": 2048,
-    "essential": true,
-    "portMappings" : [
-          {
-            "containerPort" : ${var.src_container_port}
-          }
-        ],
-        "environment": [
-      {
-        "name": "DATABASE_URL",
-        "value": "postgres://${var.db_username}:${var.db_password}@${var.db_endpoint}/${var.db_name}"
-      },
-      {
-        "name": "PORT",
-        "value": "${var.src_container_port}"
-      },
-      {
-        "name": "SQS_QUEUE_URL",
-        "value": "${var.sqs_url}"
-      },
-      {
-        "name": "AWS_REGION",
-        "value": "eu-west-1"
-      },
-      {
-        "name": "REDIS_HOST",
-        "value": "${var.redis_endpoint_address}"
-      },
-      {
-        "name": "REDIS_PORT",
-        "value": "6379"
-      }
-    ],
-    "logConfiguration": {
-      "logDriver": "awslogs",
-      "options": {
-        "awslogs-group": "${aws_cloudwatch_log_group.ecs_src_log_group.name}",
-        "awslogs-region": "eu-west-1",
-        "awslogs-stream-prefix": "ecs"
-      }
-    }
-    }
-]
 
-TASK_DEFINITION
+  container_definitions = jsonencode([
+    {
+      name      = "url-src-container"
+      image     = "${data.aws_ecr_repository.url-shortner-ecr.repository_url}:src-latest"
+      cpu       = 1024
+      memory    = 2048
+      essential = true
+
+      portMappings = [
+        {
+          containerPort = tonumber(var.src_container_port)
+        }
+      ]
+
+      environment = [
+        { name = "PORT", value = tostring(var.src_container_port) },
+        { name = "SQS_QUEUE_URL", value = var.sqs_url },
+        { name = "AWS_REGION", value = "eu-west-1" },
+        { name = "REDIS_HOST", value = var.redis_endpoint_address },
+        { name = "REDIS_PORT", value = "6379" }
+      ]
+
+      secrets = [
+        {
+          name      = "DATABASE_URL"
+          valueFrom = "${var.db_secret_arn}:database_url::"
+        }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.ecs_src_log_group.name
+          "awslogs-region"        = "eu-west-1"
+          "awslogs-stream-prefix" = "ecs"
+        }
+      }
+    }
+  ])
+
+
   runtime_platform {
     operating_system_family = "LINUX"
     cpu_architecture        = "ARM64"
@@ -89,7 +95,7 @@ resource "aws_ecs_service" "url-src-ecs-service" {
   load_balancer {
     target_group_arn = var.src-tg-arn
     container_name   = "url-src-container"
-    container_port   = var.src_container_port
+    container_port   = tonumber(var.src_container_port)
   }
 
   network_configuration {
@@ -107,7 +113,10 @@ resource "aws_ecs_service" "url-src-ecs-service" {
 }
 
 
-#ECS SERVICE FOR DASHBOARD SERVICE API
+# ------------------------------------------------------------------------------
+# 2. DASHBOARD SERVICE API
+# ------------------------------------------------------------------------------
+
 resource "aws_ecs_task_definition" "url-dashboard-td" {
   family                   = "url-dashboard-td"
   requires_compatibilities = ["FARGATE"]
@@ -116,40 +125,43 @@ resource "aws_ecs_task_definition" "url-dashboard-td" {
   task_role_arn            = var.ecs-task-app-role-arn
   cpu                      = 1024
   memory                   = 2048
-  container_definitions    = <<TASK_DEFINITION
-[
-  {
-    "name": "url-dashboard-container",
-    "image": "${data.aws_ecr_repository.url-shortner-ecr.repository_url}:dashboard-latest",
-    "cpu": 1024,
-    "memory": 2048,
-    "essential": true,
-    "portMappings" : [
-      {
-        "containerPort" : ${var.dashboard_container_port}
+  container_definitions = jsonencode([
+    {
+      name      = "url-dashboard-container"
+      image     = "${data.aws_ecr_repository.url-shortner-ecr.repository_url}:dashboard-latest"
+      cpu       = 1024
+      memory    = 2048
+      essential = true
+
+      portMappings = [
+        {
+          containerPort = tonumber(var.dashboard_container_port)
+        }
+      ]
+
+      environment = [
+        { name = "PORT", value = tostring(var.dashboard_container_port) },
+        { name = "REDIS_HOST", value = var.redis_endpoint_address },
+        { name = "REDIS_PORT", value = "6379" }
+      ]
+
+      secrets = [
+        {
+          name      = "DATABASE_URL"
+          valueFrom = "${var.db_secret_arn}:database_url::"
+        }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.ecs_dashboard_log_group.name
+          "awslogs-region"        = "eu-west-1"
+          "awslogs-stream-prefix" = "ecs"
+        }
       }
-    ],
-    "environment": [
-      {
-        "name": "DATABASE_URL",
-        "value": "postgres://${var.db_username}:${var.db_password}@${var.db_endpoint}/${var.db_name}"
-      },
-      {
-        "name": "PORT",
-        "value": "${var.dashboard_container_port}"
-      },
-      {
-        "name": "REDIS_HOST",
-        "value": "${var.redis_endpoint_address}"
-      },
-      {
-        "name": "REDIS_PORT",
-        "value": "6379"
-      }
-    ]
-  }
-]
-TASK_DEFINITION
+    }
+  ])
 
   runtime_platform {
     operating_system_family = "LINUX"
@@ -169,7 +181,7 @@ resource "aws_ecs_service" "url-dashboard-ecs-service" {
   load_balancer {
     target_group_arn = var.dashboard-tg-arn
     container_name   = "url-dashboard-container"
-    container_port   = var.dashboard_container_port
+    container_port   = tonumber(var.dashboard_container_port)
   }
 
   network_configuration {
@@ -186,12 +198,9 @@ resource "aws_ecs_service" "url-dashboard-ecs-service" {
 
 }
 
-# ECS Service for Worker/Click analytics
-resource "aws_cloudwatch_log_group" "ecs_worker_log_group" {
-  name              = "/ecs/url-worker-td"
-  retention_in_days = 7
-}
-
+# ------------------------------------------------------------------------------
+# 3. WORKER / CLICK ANALYTICS SERVICE
+# ------------------------------------------------------------------------------
 resource "aws_ecs_task_definition" "url-worker-td" {
   family                   = "url-worker-td"
   requires_compatibilities = ["FARGATE"]
@@ -200,47 +209,39 @@ resource "aws_ecs_task_definition" "url-worker-td" {
   task_role_arn            = var.ecs-task-app-role-arn
   cpu                      = 1024
   memory                   = 2048
-  container_definitions    = <<TASK_DEFINITION
-[
-  {
-    "name": "url-worker-container",
-    "image": "${data.aws_ecr_repository.url-shortner-ecr.repository_url}:worker-latest",
-    "cpu": 1024,
-    "memory": 2048,
-    "essential": true,
-        "environment": [
-      {
-        "name": "DATABASE_URL",
-        "value": "postgres://${var.db_username}:${var.db_password}@${var.db_endpoint}/${var.db_name}"
-      },
-      {
-        "name": "SQS_QUEUE_URL",
-        "value": "${var.sqs_url}"
-      },
-      {
-        "name": "AWS_REGION",
-        "value": "eu-west-1"
-      },
-      {
-        "name": "REDIS_HOST",
-        "value": "${var.redis_endpoint_address}"
-      },
-      {
-        "name": "REDIS_PORT",
-        "value": "6379"
-      }
-    ],
-    "logConfiguration": {
-      "logDriver": "awslogs",
-      "options": {
-        "awslogs-group": "${aws_cloudwatch_log_group.ecs_worker_log_group.name}",
-        "awslogs-region": "eu-west-1",
-        "awslogs-stream-prefix": "ecs"
+
+  container_definitions = jsonencode([
+    {
+      name      = "url-worker-container"
+      image     = "${data.aws_ecr_repository.url-shortner-ecr.repository_url}:worker-latest"
+      cpu       = 1024
+      memory    = 2048
+      essential = true
+
+      environment = [
+        { name = "SQS_QUEUE_URL", value = var.sqs_url },
+        { name = "AWS_REGION", value = "eu-west-1" },
+        { name = "REDIS_HOST", value = var.redis_endpoint_address },
+        { name = "REDIS_PORT", value = "6379" }
+      ]
+
+      secrets = [
+        {
+          name      = "DATABASE_URL"
+          valueFrom = "${var.db_secret_arn}:database_url::"
+        }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.ecs_worker_log_group.name
+          "awslogs-region"        = "eu-west-1"
+          "awslogs-stream-prefix" = "ecs"
+        }
       }
     }
-    }
-]
-TASK_DEFINITION
+  ])
 
   runtime_platform {
     operating_system_family = "LINUX"

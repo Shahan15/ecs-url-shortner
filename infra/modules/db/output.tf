@@ -18,3 +18,8 @@ output "db_name" {
   value       = aws_db_instance.postgres.db_name
   description = "The default database name"
 }
+
+output "db_connection_secret_arn" {
+  value       = aws_secretsmanager_secret.db_connection_string.arn
+  description = "ARN of the secret containing the full DATABASE_URL connection string"
+}
