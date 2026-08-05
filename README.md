@@ -19,6 +19,7 @@ A high-availability, microservices-based URL shortener application containerised
 ## Architecture
 
 ![Architecture Diagram](.github/assets/ArchitectureDiagram.png)
+
 **Traffic flow:**
 
 ```
@@ -35,6 +36,39 @@ User --> queries Route53 (lnk.shahankhan.co.uk) --> Route53 resolves to ALB --> 
 | **Database: PostgreSQL over DynamoDB** | Simple relational mapping for short codes to URLs, guarantees link uniqueness, and allows easy local setup with Docker without AWS lock-in. |
 
 ## Project Architecture
+
+```
+.
+├── .github/
+│   ├── assets/               # Architecture diagrams and healthcheck screenshots
+│   └── workflows/            # GitHub Actions CI/CD pipelines
+│       ├── docker-build-push.yml
+│       └── terraform-deploy.yml
+├── app/                      # Primary API service (URL shortener application)
+├── backend-bootstrap/        # Initial S3/DynamoDB remote state backend setup
+├── infra/                    # Infrastructure as Code (Terraform)
+│   ├── modules/              # Reusable Terraform modules
+│   │   ├── acm/              # SSL/TLS certificate management
+│   │   ├── alb/              # Application Load Balancer
+│   │   ├── db/               # PostgreSQL Database provisioning
+│   │   ├── dns/              # Route53 DNS configurations
+│   │   ├── ecs/              # ECS Cluster & Task Definitions (API, Worker, Dashboard)
+│   │   ├── elasticache/      # Redis caching layer
+│   │   ├── iam/              # IAM roles and policies
+│   │   ├── route53/          # DNS records management
+│   │   ├── sg/               # Security Groups definition
+│   │   ├── sqs/              # Simple Queue Service for event processing
+│   │   ├── vpc/              # VPC, Subnets, Internet/NAT Gateways
+│   │   └── waf/              # Web Application Firewall for protection
+│   ├── main.tf               # Root Terraform configuration
+│   ├── providers.tf          # Provider setup (AWS)
+│   └── variables.tf          # Global infrastructure variables
+├── services/                 # Microservices ecosystem
+│   ├── dashboard/            # Analytics dashboard UI/API (Go)
+│   └── worker/               # Async event processing worker (Go)
+└── docker-compose.yml        # Local orchestration (Postgres, Redis, App Services)
+```
+
 
 ## Infrastructure
 **Custom VPC:** Consisting of 2 public subnets and 2 Private subnets across 2 AZ's. Ensuring high availability.
@@ -57,8 +91,15 @@ User --> queries Route53 (lnk.shahankhan.co.uk) --> Route53 resolves to ALB --> 
 
 **Prerequisites:** Docker
 
+```bash
+docker compose up --build
+```
+> **Note:** SQS Will not work locally currently as it requires AWS SQS 
+
 You can run a health check via:
 `curl http://localhost:8080/healthz`
+
+![Health Check](.github/assets/HealthCheck.png)
 
 ## Setup Order & Prerequisites
 
