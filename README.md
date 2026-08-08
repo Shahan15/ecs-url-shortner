@@ -127,3 +127,8 @@ This will generate the S3 bucket required to store your .tfstate file. Enabling 
 - Network Isolation: The application container layer possesses zero public IP addresses. It is locked inside a private subnet layer protected by stateful security groups that only accept incoming inputs on port 8080 stemming exclusively from the ALB's security group ID.
 
 ## CI/CD Pipelines
+
+| Pipeline | Trigger | Purpose / Key Steps |
+| :--- | :--- | :--- |
+| **`docker-build-push.yml`**<br>*(Docker Build & Push)* | `push` / `workflow_dispatch` | Authenticates with AWS via OIDC, logs into Amazon ECR, builds and pushes multi-service Docker images (`app`, `worker`, `dashboard`) using GitHub Actions caching, and forces a rolling update on AWS ECS. Only running on source code changes |
+| **`terraform-deploy.yml`**<br>*(Terraform Provisioning)* | `push` / `workflow_dispatch` | Authenticates via AWS OIDC, sets up HashiCorp Terraform, validates configurations, runs `terraform plan`, and automatically applies infrastructure updates. |
