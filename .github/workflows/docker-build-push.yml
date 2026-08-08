@@ -65,7 +65,7 @@ jobs:
             tag: worker
 
     steps:
-      # Check if service should run/deploy
+      # Checks if service should run/deploy
       - name: Filter matrix job
         id: filter
         run: |
@@ -80,7 +80,7 @@ jobs:
         if: steps.filter.outputs.should_run == 'true'
         uses: actions/checkout@v4
 
-      # Authenticate CLI with OIDC
+      # Authenticates CLI with OIDC
       - name: Configure AWS Credentials
         if: steps.filter.outputs.should_run == 'true'
         uses: aws-actions/configure-aws-credentials@v6.1.0
@@ -88,7 +88,7 @@ jobs:
           role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/github-actions-role
           aws-region: eu-west-1
 
-      # Log into ECR
+      # Logs into ECR
       - name: Log into ECR
         if: steps.filter.outputs.should_run == 'true'
         id: login-into-ecr
